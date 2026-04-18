@@ -1,0 +1,39 @@
+name: Build IPA
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Prepare Capacitor
+        run: |
+          npm install @capacitor/core @capacitor/cli @capacitor/ios
+          npx cap init "MalaCounter" "com.mala.counter" --web-dir www
+          npx cap add ios
+
+      - name: Compile App
+        run: |
+          npx cap copy ios
+          cd ios/App
+          # This builds an unsigned app perfect for TrollStore
+          xcodebuild -workspace App.xcworkspace -scheme App -configuration Debug -sdk iphoneos -derivedDataPath build
+          
+      - name: Package for TrollStore
+        run: |
+          mkdir -p Payload
+          cp -r ios/App/build/Build/Products/Debug-iphoneos/App.app Payload/
+          zip -r MalaCounter.ipa Payload
+          
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MalaCounter-IPA
+          path: MalaCounter.ipa
