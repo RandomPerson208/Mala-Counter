@@ -16,7 +16,8 @@ jobs:
       - name: Install Capacitor
         run: |
           npm install @capacitor/core @capacitor/cli @capacitor/ios
-          npx cap init "MalaCounter" "com.mala.counter" --web-dir .
+         npx cap init "MalaCounter" "com.mala.counter" --web-dir www
+
           npx cap add ios
 
       - name: Build iOS App
