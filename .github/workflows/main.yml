@@ -22,8 +22,8 @@ jobs:
 
       - name: Force Landscape Orientation
         run: |
-          sed -i 's/UIInterfaceOrientationPortrait//g' ios/App/App/Info.plist 
-
+          plutil -remove UISupportedInterfaceOrientations ios/App/App/Info.plist
+          plutil -insert UISupportedInterfaceOrientations -xml "<array><string>UIInterfaceOrientationLandscapeLeft</string><string>UIInterfaceOrientationLandscapeRight</string></array>" ios/App/App/Info.plist
       - name: Compile App (No Signing)
         run: |
           npx cap copy ios
