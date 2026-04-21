@@ -21,22 +21,21 @@ jobs:
 
       - name: Prepare Capacitor
         run: |
-          npm install @capacitor/core @capacitor/cli @capacitor/ios @capacitor/android
+          npm install @capacitor/core @capacitor/cli @capacitor/ios @capacitor/android @capacitor/assets
           npx cap init "Mala Counter" "com.mala.counter" --web-dir www
           npx cap add ios
           npx cap add android
 
-      - name: Force Landscape (iOS)
+      - name: Generate Native Icons
         run: |
-          plutil -remove UISupportedInterfaceOrientations ios/App/App/Info.plist
-          plutil -insert UISupportedInterfaceOrientations -xml "<array><string>UIInterfaceOrientationLandscapeLeft</string><string>UIInterfaceOrientationLandscapeRight</string></array>" ios/App/App/Info.plist
+          # This tool creates all required icon sizes from your 1024x1024 file
+          npx capacitor-assets generate --icon
+          npx cap copy
 
-      - name: Force Landscape (Android)
+      - name: Force Landscape
         run: |
+          plutil -replace UISupportedInterfaceOrientations -xml "<array><string>UIInterfaceOrientationLandscapeLeft</string><string>UIInterfaceOrientationLandscapeRight</string></array>" ios/App/App/Info.plist
           sed -i '' 's/android:name=".MainActivity"/android:name=".MainActivity" android:screenOrientation="landscape"/g' android/app/src/main/AndroidManifest.xml
-
-      - name: Copy Assets
-        run: npx cap copy
 
       - name: Build Android APK
         run: |
