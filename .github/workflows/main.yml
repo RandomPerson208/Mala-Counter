@@ -31,14 +31,21 @@ jobs:
           npx @capacitor/assets generate --ios --android
           npx cap copy
 
-      - name: Force Landscape
+      - name: Force Landscape and Debug
         run: |
-          # iPhone Orientation
+          # Apply iOS settings
           plutil -replace UISupportedInterfaceOrientations -xml "<array><string>UIInterfaceOrientationLandscapeLeft</string><string>UIInterfaceOrientationLandscapeRight</string></array>" ios/App/App/Info.plist
-          # iPad Orientation
           plutil -replace UISupportedInterfaceOrientations~ipad -xml "<array><string>UIInterfaceOrientationLandscapeLeft</string><string>UIInterfaceOrientationLandscapeRight</string></array>" ios/App/App/Info.plist
-          # Android Orientation
+          plutil -replace UIRequiresFullScreen -bool YES ios/App/App/Info.plist
+          
+          # Apply Android settings
           sed -i '' 's/android:name=".MainActivity"/android:name=".MainActivity" android:screenOrientation="landscape"/g' android/app/src/main/AndroidManifest.xml
+          
+          # DEBUGGING: Print files to logs so we can see if they actually changed
+          echo "--- Checking Info.plist ---"
+          cat ios/App/App/Info.plist
+          echo "--- Checking AndroidManifest.xml ---"
+          cat android/app/src/main/AndroidManifest.xml
 
       - name: Build Android APK
         run: |
