@@ -12,6 +12,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          
+      - name: Inject Notification Script
+        run: |
+          # This inserts your notification script before the </body> tag
+          sed -i '' 's|</body>|<script type="module">import { LocalNotifications } from "https://cdn.jsdelivr.net/npm/@capacitor/local-notifications@5.0.0/+esm"; async function showNotification() { await LocalNotifications.requestPermissions(); await LocalNotifications.schedule({ notifications: [{ title: "Mala Counter", body: "Time for your daily chant!", id: 1, schedule: { at: new Date(Date.now() + 1000 * 60) } }] }); } document.body.addEventListener("click", showNotification, { once: true });</script></body>|g' index.html
 
       - name: Setup Java 17
         uses: actions/setup-java@v4
