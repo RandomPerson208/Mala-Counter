@@ -26,12 +26,13 @@ jobs:
 
       - name: Prepare Capacitor
         run: |
-          npm install
-          npx cap sync
-          npm install @capacitor/core @capacitor/cli @capacitor/ios @capacitor/android @capacitor/assets
+          npm install @capacitor/core @capacitor/cli @capacitor/ios @capacitor/android @capacitor/local-notifications
           npx cap init "Mala Counter" "com.mala.counter" --web-dir www
           npx cap add ios
           npx cap add android
+          npm install
+          npm sync
+
 
       - name: Generate Native Icons
         run: |
