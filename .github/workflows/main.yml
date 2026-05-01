@@ -59,12 +59,10 @@ jobs:
           npx cap add ios
           npx cap add android
 
-      - name: Generate Native Assets
+      - name: Generate Native Icons
         run: |
-          # This takes your 1024x1024 icon and creates all sizes for iPhone and Android
-          # Ensure your icon is named 'icon.png' inside the 'resources' folder
-          npx capacitor-assets generate --icon
-          npx cap sync
+          npx @capacitor/assets generate --ios --android
+          npx cap copy
 
       - name: Force Landscape & Fullscreen
         run: |
