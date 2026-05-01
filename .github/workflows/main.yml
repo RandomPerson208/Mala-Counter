@@ -66,11 +66,10 @@ jobs:
 
       - name: Force Landscape & Fullscreen
         run: |
-          # iOS Landscape Lock
-          plutil -replace UISupportedInterfaceOrientations -xml "<array><string>UIInterfaceOrientationLandscapeLeft</string></array>" ios/App/App/Info.plist
           
-          # Android: Safe landscape fix
-          sed -i '' 's/android:screenOrientation="[^"]*"/android:screenOrientation="landscape"/' android/app/src/main/AndroidManifest.xml
+          plutil -convert xml1 ios/App/App/Info.plist
+          plutil -replace UISupportedInterfaceOrientations -xml "<array><string>UIInterfaceOrientationLandscapeRight</string></array>" ios/App/App/Info.plist
+          plutil -replace UISupportedInterfaceOrientations~ipad -xml "<array><string>UIInterfaceOrientationLandscapeRight</string></array>" ios/App/App/Info.plist
 
 
 
