@@ -50,8 +50,7 @@ jobs:
                   with open(file_path, "w") as f: f.write(content.replace("</body>", script + "</body>"))
                   print("Patched index.html")
           '
-
-          '
+          
 
       - name: Prepare Capacitor
         run: |
