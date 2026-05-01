@@ -65,8 +65,9 @@ jobs:
           # iOS Landscape Lock
           plutil -replace UISupportedInterfaceOrientations -xml "<array><string>UIInterfaceOrientationLandscapeLeft</string><string>UIInterfaceOrientationLandscapeRight</string></array>" ios/App/App/Info.plist
           
-          # Android Landscape & Fullscreen (Using # instead of / to avoid the 'T' error)
-          sed -i '' 's#android:name=".MainActivity"#android:name=".MainActivity" android:screenOrientation="landscape" android:theme="@android:style/Theme.NoTitleBar.Fullscreen"#' android/app/src/main/AndroidManifest.xml
+          # Android: Just force the landscape mode safely
+          sed -i '' 's/android:screenOrientation="[^"]*"/android:screenOrientation="landscape"/' android/app/src/main/AndroidManifest.xml
+
 
       - name: Build Android APK
         run: |
