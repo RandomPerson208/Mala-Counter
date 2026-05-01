@@ -8,5 +8,6 @@
     "@capacitor/ios": "^5.0.0",
     "@capacitor/local-notifications": "^5.0.0",
     "cordova-res": "^0.15.4"
+    "@capacitor/cookies": "^5.0.0"
   }
 }
