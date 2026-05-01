@@ -31,14 +31,16 @@ jobs:
           npx @capacitor/assets generate --ios --android
           npx cap copy
 
-      - name: Force Landscape Configuration
+  
+      - name: Force Landscape & Fullscreen
         run: |
-          # iOS: Force LandscapeRight (Notch on Left)
-          # We convert to xml1 first to ensure plutil can edit it safely
-          plutil -convert xml1 ios/App/App/Info.plist
-          plutil -replace UISupportedInterfaceOrientations -xml "<array><string>UIInterfaceOrientationLandscapeRight</string></array>" ios/App/App/Info.plist
-          plutil -replace UISupportedInterfaceOrientations~ipad -xml "<array><string>UIInterfaceOrientationLandscapeRight</string></array>" ios/App/App/Info.plist
+          # iOS Landscape Lock
+          plutil -replace UISupportedInterfaceOrientations -xml "<array><string>UIInterfaceOrientationLandscapeLeft</string><string>UIInterfaceOrientationLandscapeRight</string></array>" ios/App/App/Info.plist
           
+          # Android Landscape & Fullscreen - Safe version
+          # This specifically targets the MainActivity line without breaking the brackets
+          sed -i '' 's/android:name=".MainActivity"/android:name=".MainActivity" android:screenOrientation="landscape" android:theme="@android:style/Theme.NoTitleBar.Fullscreen"/' android/app/src/main/AndroidManifest.xml
+
           # Android: Force landscape
           sed -i '' 's/android:name=".MainActivity"/android:name=".MainActivity" android:screenOrientation="landscape"/g' android/app/src/main/AndroidManifest.xml
 
