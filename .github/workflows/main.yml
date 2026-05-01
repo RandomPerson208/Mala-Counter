@@ -12,46 +12,59 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-   
-    
-      - name: Inject Notification Brain
-        run: |
-          sed -i '' 's|</head>|<script>async function setDailyReminder(){const {LocalNotifications:n}=Capacitor.Plugins;await n.requestPermissions();await n.schedule({notifications:[{title:"Mala Counter",body:"Complete your daily mala!",id:12,schedule:{on:{hour:12,minute:0},repeats:true}}]});} async function celebrate(){const {LocalNotifications:n}=Capacitor.Plugins;await n.requestPermissions();await n.schedule({notifications:[{title:"Mala Complete!",body:"Congratulations on finishing a round!",id:1,schedule:{at:new Date(Date.now()+500)}}]});} window.setDailyReminder=setDailyReminder;window.celebrate=celebrate;</script></head>|' www/index.html
-          sed -i '' 's|<meta name="viewport" content="[^"]*">|<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">|' www/index.html
 
-
-     
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
 
+      - name: Inject Notification Script
+        run: |
+          python3 -c '
+          import os
+          file_path = "www/index.html"
+          script = """
+          <script>
+            const notify = async (t, b, id, sch = null) => {
+              const { LocalNotifications: ln } = Capacitor.Plugins;
+              await ln.requestPermissions();
+              await ln.schedule({ notifications: [{ title: t, body: b, id, schedule: sch }] });
+            };
+            const intrvl = setInterval(() => {
+              const vm = window.scaffolding?.vm?.runtime;
+              if (vm) {
+                clearInterval(intrvl);
+                notify("Mala Counter", "Complete your daily mala!", 12, { on: { hour: 12, minute: 0 }, repeats: true });
+                vm.on("VAR_VALUE_UPDATE", (e) => {
+                  if (e.name === "Malas Chanted Today:" && e.value == 1) 
+                    notify("Mala Complete!", "Excellent progress on your first Mala.", 101);
+                });
+              }
+            }, 1000);
+          </script>
+          """
+          if os.path.exists(file_path):
+              with open(file_path, "r") as f: content = f.read()
+              if "</body>" in content:
+                  with open(file_path, "w") as f: f.write(content.replace("</body>", script + "</body>"))
+                  print("Patched index.html")
+          '
+
+          '
+
       - name: Prepare Capacitor
         run: |
-          npm install @capacitor/core @capacitor/cli @capacitor/ios @capacitor/android @capacitor/local-notifications
+          npm install @capacitor/core @capacitor/cli @capacitor/ios @capacitor/android @capacitor/local-notifications @capacitor/cookies
           npx cap init "Mala Counter" "com.mala.counter" --web-dir www
           npx cap add ios
           npx cap add android
-          # Use 'npx cap sync' instead of just 'sync'
           npx cap sync
 
-
-      - name: Generate Native Icons
+      - name: Force Landscape & Fullscreen
         run: |
-          npx @capacitor/assets generate --ios --android
-          npx cap copy
-
-      - name: Force Landscape Configuration
-        run: |
-          # iOS: Force LandscapeRight (Notch on Left)
-          # We convert to xml1 first to ensure plutil can edit it safely
-          plutil -convert xml1 ios/App/App/Info.plist
-          plutil -replace UISupportedInterfaceOrientations -xml "<array><string>UIInterfaceOrientationLandscapeRight</string></array>" ios/App/App/Info.plist
-          plutil -replace UISupportedInterfaceOrientations~ipad -xml "<array><string>UIInterfaceOrientationLandscapeRight</string></array>" ios/App/App/Info.plist
-          
-          # Android: Force landscape
-          sed -i '' 's/android:name=".MainActivity"/android:name=".MainActivity" android:screenOrientation="landscape"/g' android/app/src/main/AndroidManifest.xml
+          plutil -replace UISupportedInterfaceOrientations -xml "<array><string>UIInterfaceOrientationLandscapeLeft</string><string>UIInterfaceOrientationLandscapeRight</string></array>" ios/App/App/Info.plist
+          sed -i '' 's/android:name=".MainActivity"/android:name=".MainActivity" android:screenOrientation="landscape" android:theme="@android:style/Theme.NoTitleBar.Fullscreen"/g' android/app/src/main/AndroidManifest.xml
 
       - name: Build Android APK
         run: |
@@ -62,7 +75,6 @@ jobs:
       - name: Compile iOS
         run: |
           cd ios/App
-          xcodebuild clean -workspace App.xcworkspace -scheme App
           xcodebuild -workspace App.xcworkspace -scheme App -configuration Debug -sdk iphoneos -derivedDataPath build CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=""
           
       - name: Package IPA
@@ -78,3 +90,4 @@ jobs:
           path: |
             MalaCounter.ipa
             android/app/build/outputs/apk/debug/app-debug.apk
+
