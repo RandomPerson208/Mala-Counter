@@ -17,6 +17,8 @@ jobs:
       - name: Inject Notification Brain
         run: |
           sed -i '' 's|</head>|<script>async function setDailyReminder(){const {LocalNotifications:n}=Capacitor.Plugins;await n.requestPermissions();await n.schedule({notifications:[{title:"Mala Counter",body:"Complete your daily mala!",id:12,schedule:{on:{hour:12,minute:0},repeats:true}}]});} async function celebrate(){const {LocalNotifications:n}=Capacitor.Plugins;await n.requestPermissions();await n.schedule({notifications:[{title:"Mala Complete!",body:"Congratulations on finishing a round!",id:1,schedule:{at:new Date(Date.now()+500)}}]});} window.setDailyReminder=setDailyReminder;window.celebrate=celebrate;</script></head>|' www/index.html
+          sed -i '' 's|<meta name="viewport" content="[^"]*">|<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">|' www/index.html
+
 
      
       - name: Setup Java 17
